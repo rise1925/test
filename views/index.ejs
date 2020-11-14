@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <script src="socket/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css" >
+    <script src="js/bootstrap.min.js"></script>
+    <title>주차장 관리 GUI</title>
+</head>
+<body>
+<style>
+.h5, h5{
+    margin:30px 0 15px 0;
+    text-align: center;
+}
+.container{
+    text-align: center;
+}
+.col-8{
+    margin: 0 auto;;
+}
+.table{
+    text-align: center;
+}
+</style>
+    <div class="container">
+        <img src="img/jumbo.png">
+        <div class="row" >
+            
+          <div class="col-8">
+              <div id="park_check">
+            <img  src="img/parking_empty.png" style="width:730px">
+            </div>
+            <h5>누적 주차 기록</h5>
+            <table class="table table-striped table-sm table-hover" >
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>주차장 이름</th>
+                        <th>주차 상태</th>
+                        <th>날짜</th>
+                    </tr>
+                </thead>
+                
+                <tbody id="contents">
+                    
+                </tbody>                                   
+            </table>
+        </div>
+    </div>
+</div>
+              
+<script>
+setInterval(intervalFunc, 1000);
+function intervalFunc() {
+    var html_code = "";
+    var no_data = "";
+    var name_data = "";
+    var parking_data = "";
+    var date_data = "";
+    var car_check = "";
+    $.ajax({
+        url:'/index',
+        async:true,
+        type: 'POST',
+      dataType:'json',
+    success:function(msg){
+      $('tbody#contents').empty();
+      $('div#park_check').empty();
+      for(var i = 0 ; i < msg.message1.length ; i++){ 
+        no_data = String(msg.message1[i].no);
+        name_data = String(msg.message1[i].name);
+        if(msg.message1[i].parking == 1){
+            parking_data = '<img src="img/full_icon.png" style="width:20px">' + ' &nbsp; 차량 존재';
+            if(msg.message1[0].parking == 1){
+                car_check = '<img src="img/parking_full.png" style="width:730px">';
+            }else{
+                car_check = '<img src="img/parking_empty.png" style="width:730px">';
+            }  
+                     
+        }else{
+            parking_data = '<img src="img/empty_icon.png" style="width:20px">' +  ' &nbsp; 차량 없음';
+            if(msg.message1[0].parking == 1){
+                car_check = '<img src="img/parking_full.png" style="width:730px">';
+            }else{
+                car_check = '<img src="img/parking_empty.png" style="width:730px">';
+            }
+        }
+        
+        date_data = String(msg.message1[i].date);
+        if(i == 0){
+            html_code += '<tr><td><img src="img/now_icon.png" style="position:absolute;left:-100px">'+no_data+'</td><td>'+name_data+'</td><td>'+parking_data+'</td><td>'+date_data+'</td></tr>';
+        }else{
+            html_code += '<tr><td>'+no_data+'</td><td>'+name_data+'</td><td>'+parking_data+'</td><td>'+date_data+'</td></tr>';
+        }
+        
+      }
+      document.getElementById("contents").innerHTML = html_code;
+      document.getElementById("park_check").innerHTML = car_check;
+
+      html_code = "";
+      car_check = "";
+    },
+    error:function(err){
+      alert("보내기 실패 "  + JSON.stringify(err));
+    }
+    });
+    
+    console.log(no_data + " / " + name_data);
+}    
+
+</script>
+
+</body>
+</html>
